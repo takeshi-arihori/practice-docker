@@ -80,3 +80,52 @@ DockerのコンテナはLinuxのカーネルと機能を使用しているため
 既存のイメージにレイヤーをさらに積み重ねるためのテキストファイル
 
 ## コンテナの基礎操作
+- **コンテナの起動**: `docker container run [option] <image> [command]`
+- **コンテナ一覧の確認**: `docker run [option] <image> [command]`
+- **コンテナの停止**: `docker container stop [option] <container>`
+
+### 最低限の`nginx`の起動
+```
+$ docker container run \
+    --publish 8080:80  \
+    nginx:1.21
+```
+
+### 起動中のコンテナを停止せずいきなり削除
+```
+$ docker container rm \
+    --force           \
+    <container>
+```
+
+### コンテナを起動 
+- コンテナを起動する - container run
+
+| オプション                 | 意味                           | 用途                                            |
+|----------------------------|--------------------------------|-------------------------------------------------|
+| -i, --interactive          | コンテナの標準入力に接続する   | コンテナを対話操作する                          |
+| -t, --tty                  | 擬似ターミナルを割り当てる     | コンテナを対話操作する                          |
+| -d, --detach               | バックグラウンドで実行する     | ターミナルが固まるのを避ける                    |
+| --rm                       | 停止済コンテナを自動で削除する | 起動時に停止済コンテナと一意な情報が衝突するのを避ける |
+| --name                     | コンテナに名前をつける         | コンテナを指定しやすくする                      |
+| --platform                 | イメージのアーキテクチャを明示する | M1 Mac で必要な場合がある                        |
+
+### コンテナの対話操作
+```
+$ docker container run \
+    --interactive      \
+    --tty              \
+    ubuntu:24.04
+```
+- **短縮バージョン**: `$ docker run -it ubuntu:20.04`
+
+#### bash内
+```
+root@46dae08e367a:/# cat /etc/lsb-release
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=24.10
+DISTRIB_CODENAME=oracular
+DISTRIB_DESCRIPTION="Ubuntu Oracular Oriole (development branch)"
+root@46dae08e367a:/#
+```
+
