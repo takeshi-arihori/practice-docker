@@ -119,7 +119,7 @@ $ docker container run \
 ```
 - **短縮バージョン**: `$ docker run -it ubuntu:20.04`
 
-#### bash内
+**bash内**
 ```
 root@46dae08e367a:/# cat /etc/lsb-release
 DISTRIB_ID=Ubuntu
@@ -129,3 +129,137 @@ DISTRIB_DESCRIPTION="Ubuntu Oracular Oriole (development branch)"
 root@46dae08e367a:/#
 ```
 
+### コンテナ停止時に自動で削除
+コンテナ起動時に`--rm`オプションを指定することで、停止時に同時に削除される。
+```
+$ docker container run \
+    --rm               \
+    --detach           \
+    --publish 8080:80  \
+    nginx:1.21
+```
+
+###　コンテナに名前をつける
+コンテナを停止する際など名前で指定できる。
+```
+$ docker container run \
+    --name web-server  \
+    --rm               \
+    --detach           \
+    --publish 8080:80  \
+    nginx:1.21
+```
+**結果**
+```
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                  NAMES
+5b89dbe9f62e   nginx     "/docker-entrypoint.…"   4 seconds ago   Up 3 seconds   0.0.0.0:8080->80/tcp   web-server
+```
+
+### コンテナ起動時の挙動
+```
+$ docker container run [option] <image> [command]
+```
+＊＊command**: 任意の命令を実行させる。commandなしの場合、デフォルトの命令が実行される。
+
+#### **例１**: `bash` -> bashで起動(デフォルト命令ではnginxの起動のみ)
+
+
+
+##　コンテナの状態遷移
+### コンテナとプロセスについて
+
+### **例1: Ubuntuコンテナをデフォルト命令(bash)で起動**
+- `PID 1`: bash
+- `PID 10`: ps
+```
+% docker container run \
+--name ubuntu1 \
+> --rm \
+> --interactive \
+> --tty \
+> ubuntu:24.04
+root@ae31ad1bffc7:/# ps
+  PID TTY          TIME CMD
+    1 pts/0    00:00:00 bash
+    9 pts/0    00:00:00 ps
+```
+
+**結果＊＊
+Ubuntu コンテナを起動し、デフォルト命令の `bash` を使っている状態で `ps` コマンドでコンテナ内のプロセス一覧を確認すると、PID の 1 は `bash` になっています。
+
+### **例2**: Nginxコンテナをデフォルト命令(nginx)で起動
+
+- nginxを起動
+```
+% docker container run \
+--name nginx1 \
+--detach \
+--rm \
+nginx:1.21
+docka3f678198babcbe37238ea46cf71a9a7dd4534495734e13807f6333030eef019
+```
+
+- コンテナに入る
+```
+% docker container exec \
+--interactive \
+--tty \
+nginx1 \
+bash
+```
+
+- コンテナ内にpsコマンドがないため、コンテナ内で実行しインストールを行う
+```
+apt update
+apt install -y procps
+```
+
+**結果**
+`PID` の 1 は `nginx` の起動コマンド
+`ps`自身と`ps`を実行するために`container exec`で起動したbashのプロセスも存在する。
+
+```
+root@a3f678198bab:/# ps x
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:00 nginx: master process nginx -g daemon off;
+   43 pts/0    Ss     0:00 bash
+  397 pts/0    R+     0:00 ps x
+```
+
+### **例3**: Nginxコンテナを指定命令(bash)で起動
+```
+docker container run \
+> --name nginx2 \
+> --rm \
+> --interactive \
+> --tty \
+> nginx:1.21 \
+> bash
+```
+
+# コンテナ内に ps コマンドがないためインストール
+```
+apt update
+apt install -y procps
+```
+
+```
+root@c844801718d3:/# ps
+  PID TTY          TIME CMD
+    1 pts/0    00:00:00 bash
+  355 pts/0    00:00:00 ps
+```
+
+**結果**
+`PID` の 1 は `bash`
+
+
+### 上記の例から分かること
+- コンテナはある一つのコマンドを実行するために起動している。(PID 1)
+- 複数のコンテナの`PID=1`はLinuxのnamespace機能により衝突しない。
+
+コンテナはメインプロセス(PID=1)を実行するために起動する
+
+
+#### NEXT
+２部: コンテナの状態保持
