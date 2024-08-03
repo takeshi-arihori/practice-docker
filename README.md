@@ -417,3 +417,43 @@ $ docker image build     \
     .
 ```
 
+#### 以下のように出力されていれば成功
+```
+ => => writing image sha256:b2e8e19bd8760320b61eae81b79231ae0f80d9f1b3573b05e34931672ecc0879
+```
+
+### デフォルト命令でコンテナを起動し、意図した通りのイメージになっているか確認
+```
+% docker container run \
+--name my-ubuntu1 \
+--rm \
+my-ubuntu:date
+
+2024/08/03 02:41:17 ( UTC )
+```
+※`CMD`によるデフォルト命令の指定が意図通りになっていることを確認
+
+### `RUN`と`COPY`の結果を確認するために指定命令`vi`でコンテナを起動
+
+```
+% docker container run \
+> --name my-ubuntu2 \
+> --rm \
+> --interactive \
+> --tty \
+> my-ubuntu:date \
+> vi
+```
+※vimの画面になり、各行に数字が表示されれば成功
+
+### エラー対処
+#### イメージが改ざんされていないか等を検証する機能が作動するためコンテナ起動できない。
+- エラーメッセージ
+`docker: you are not authorized to perform this operation: server returned 401.`というメッセージが表示された場合。
+
+#### 解決策
+以下のコマンドで`Docker Content Trust(DCT)`を無効化する。
+`export DOCKER_CONTENT_TRUST=0`
+
+
+### Dockerを複数扱う場合
